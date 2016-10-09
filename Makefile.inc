@@ -1,12 +1,7 @@
 
 LIB_DIR	  := src
 INC_DIR	  := cq
-VAMP_DIR  := vamp
 KFFT_DIR  := src/ext/kissfft
-
-VAMPSDK_DIR  ?= ../vamp-plugin-sdk
-
-PLUGIN_EXT	?= .so
 
 CXX	?= g++
 CC	?= gcc
@@ -15,17 +10,15 @@ RANLIB	?= ranlib
 
 #VALGRIND	?= valgrind -q
 
-GENERAL_FLAGS	:= -I. -I$(VAMPSDK_DIR) -I$(INC_DIR) -I$(LIB_DIR) -I$(KFFT_DIR) -I$(KFFT_DIR)/tools -Dkiss_fft_scalar=double
+GENERAL_FLAGS	:= -I. -I$(INC_DIR) -I$(LIB_DIR) -I$(KFFT_DIR) -I$(KFFT_DIR)/tools -Dkiss_fft_scalar=double
 
 CFLAGS := $(GENERAL_FLAGS) $(CFLAGS) 
 CXXFLAGS := $(GENERAL_FLAGS) $(CXXFLAGS)
 
 LDFLAGS := $(LDFLAGS) 
-PLUGIN_LDFLAGS := $(LDFLAGS) $(PLUGIN_LDFLAGS)
 PF_LDFLAGS := $(LDFLAGS) -lsndfile
 
 LIB	:= libcq.a
-PLUGIN	:= cqvamp$(PLUGIN_EXT)
 
 LIB_HEADERS	:= \
 	$(INC_DIR)/CQBase.h \
@@ -60,18 +53,6 @@ LIB_SOURCES	:= \
 	$(KFFT_DIR)/kiss_fft.c \
 	$(KFFT_DIR)/tools/kiss_fftr.c
 
-VAMP_HEADERS	:= \
-	$(VAMP_DIR)/CQVamp.h \
-	$(VAMP_DIR)/CQChromaVamp.h
-
-VAMP_SOURCES	:= \
-	$(VAMP_DIR)/CQVamp.cpp \
-	$(VAMP_DIR)/CQChromaVamp.cpp \
-	$(VAMP_DIR)/libmain.cpp
-	
-HEADERS	     := $(LIB_HEADERS) $(VAMP_HEADERS)
-SOURCES	     := $(LIB_SOURCES) $(VAMP_SOURCES)
-
 LIB_OBJECTS  := $(LIB_SOURCES:.cpp=.o)
 LIB_OBJECTS  := $(LIB_OBJECTS:.c=.o)
 
@@ -81,16 +62,13 @@ OBJECTS	     := $(OBJECTS:.c=.o)
 PF_SOURCES := $(TEST_DIR)/processfile.cpp
 PF_OBJECTS := $(PF_SOURCES:.cpp=.o) $(OBJECTS)
 
-LIBS	:= $(VAMPSDK_DIR)/libvamp-sdk.a -lpthread
+LIBS	:= -lpthread
 
 default:   all
 
 all:	   libs $(PF)
 
-libs:	   $(LIB) $(PLUGIN)
-
-$(PLUGIN):	$(OBJECTS)
-	$(CXX) -o $@ $^ $(LIBS) $(PLUGIN_LDFLAGS)
+libs:	   $(LIB)
 
 $(PF):	$(PF_OBJECTS)
 	$(CXX) -o $@ $^ $(LIBS) $(PF_LDFLAGS)
@@ -104,7 +82,6 @@ clean:
 	rm -f $(OBJECTS) $(PF_OBJECTS)
 
 distclean:	clean
-	rm -f $(PLUGIN)
 
 depend:
 	makedepend -Y -fMakefile.inc $(SOURCES) $(PF_SOURCES) $(HEADERS)
@@ -132,12 +109,6 @@ src/ext/kissfft/kiss_fft.o: src/ext/kissfft/kiss_fft.h
 src/ext/kissfft/tools/kiss_fftr.o: src/ext/kissfft/tools/kiss_fftr.h
 src/ext/kissfft/tools/kiss_fftr.o: src/ext/kissfft/kiss_fft.h
 src/ext/kissfft/tools/kiss_fftr.o: src/ext/kissfft/_kiss_fft_guts.h
-vamp/CQVamp.o: vamp/CQVamp.h cq/CQSpectrogram.h cq/ConstantQ.h cq/CQBase.h
-vamp/CQVamp.o: cq/CQParameters.h cq/CQKernel.h src/Pitch.h
-vamp/CQChromaVamp.o: vamp/CQChromaVamp.h cq/CQSpectrogram.h cq/ConstantQ.h
-vamp/CQChromaVamp.o: cq/CQBase.h cq/CQParameters.h cq/CQKernel.h
-vamp/libmain.o: vamp/CQVamp.h cq/CQSpectrogram.h cq/ConstantQ.h cq/CQBase.h
-vamp/libmain.o: cq/CQParameters.h cq/CQKernel.h vamp/CQChromaVamp.h
 cq/CQKernel.o: cq/CQParameters.h
 cq/ConstantQ.o: cq/CQBase.h cq/CQParameters.h cq/CQKernel.h
 cq/CQSpectrogram.o: cq/ConstantQ.h cq/CQBase.h cq/CQParameters.h
@@ -146,5 +117,3 @@ cq/CQInverse.o: cq/CQBase.h cq/CQKernel.h cq/CQParameters.h
 cq/Chromagram.o: cq/CQBase.h
 src/dsp/MathUtilities.o: src/dsp/nan-inf.h
 src/ext/kissfft/tools/kiss_fftr.o: src/ext/kissfft/kiss_fft.h
-vamp/CQVamp.o: cq/CQSpectrogram.h cq/ConstantQ.h cq/CQBase.h
-vamp/CQVamp.o: cq/CQParameters.h cq/CQKernel.h
