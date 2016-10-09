@@ -16,7 +16,6 @@ CFLAGS := $(GENERAL_FLAGS) $(CFLAGS)
 CXXFLAGS := $(GENERAL_FLAGS) $(CXXFLAGS)
 
 LDFLAGS := $(LDFLAGS) 
-PF_LDFLAGS := $(LDFLAGS) -lsndfile
 
 LIB	:= libcq.a
 
@@ -59,19 +58,13 @@ LIB_OBJECTS  := $(LIB_OBJECTS:.c=.o)
 OBJECTS	     := $(SOURCES:.cpp=.o)
 OBJECTS	     := $(OBJECTS:.c=.o)
 
-PF_SOURCES := $(TEST_DIR)/processfile.cpp
-PF_OBJECTS := $(PF_SOURCES:.cpp=.o) $(OBJECTS)
-
 LIBS	:= -lpthread
 
 default:   all
 
-all:	   libs $(PF)
+all:	   libs 
 
 libs:	   $(LIB)
-
-$(PF):	$(PF_OBJECTS)
-	$(CXX) -o $@ $^ $(LIBS) $(PF_LDFLAGS)
 
 $(LIB):	$(LIB_OBJECTS)
 	$(RM) -f $@
@@ -79,12 +72,12 @@ $(LIB):	$(LIB_OBJECTS)
 	$(RANLIB) $@
 
 clean:		
-	rm -f $(OBJECTS) $(PF_OBJECTS)
+	rm -f $(OBJECTS)
 
 distclean:	clean
 
 depend:
-	makedepend -Y -fMakefile.inc $(SOURCES) $(PF_SOURCES) $(HEADERS)
+	makedepend -Y -fMakefile.inc $(SOURCES) $(HEADERS)
 
 # DO NOT DELETE
 
