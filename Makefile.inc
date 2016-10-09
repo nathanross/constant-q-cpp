@@ -1,7 +1,6 @@
 
 LIB_DIR	  := src
 INC_DIR	  := cq
-TEST_DIR  := test
 VAMP_DIR  := vamp
 KFFT_DIR  := src/ext/kissfft
 
@@ -23,12 +22,10 @@ CXXFLAGS := $(GENERAL_FLAGS) $(CXXFLAGS)
 
 LDFLAGS := $(LDFLAGS) 
 PLUGIN_LDFLAGS := $(LDFLAGS) $(PLUGIN_LDFLAGS)
-TEST_LDFLAGS := $(LDFLAGS) -lboost_unit_test_framework
 PF_LDFLAGS := $(LDFLAGS) -lsndfile
 
 LIB	:= libcq.a
 PLUGIN	:= cqvamp$(PLUGIN_EXT)
-PF	:= $(TEST_DIR)/processfile
 
 LIB_HEADERS	:= \
 	$(INC_DIR)/CQBase.h \
@@ -72,15 +69,6 @@ VAMP_SOURCES	:= \
 	$(VAMP_DIR)/CQChromaVamp.cpp \
 	$(VAMP_DIR)/libmain.cpp
 	
-TEST_SOURCES	:= \
-	$(TEST_DIR)/TestFFT.cpp \
-	$(TEST_DIR)/TestMathUtilities.cpp \
-	$(TEST_DIR)/TestResampler.cpp \
-	$(TEST_DIR)/TestWindow.cpp \
-	$(TEST_DIR)/TestCQKernel.cpp \
-	$(TEST_DIR)/TestCQFrequency.cpp \
-	$(TEST_DIR)/TestCQTime.cpp
-
 HEADERS	     := $(LIB_HEADERS) $(VAMP_HEADERS)
 SOURCES	     := $(LIB_SOURCES) $(VAMP_SOURCES)
 
@@ -90,9 +78,6 @@ LIB_OBJECTS  := $(LIB_OBJECTS:.c=.o)
 OBJECTS	     := $(SOURCES:.cpp=.o)
 OBJECTS	     := $(OBJECTS:.c=.o)
 
-TEST_OBJECTS	:= $(TEST_SOURCES:.cpp=.o)
-TEST_TARGETS	:= $(TEST_SOURCES:.cpp=)
-
 PF_SOURCES := $(TEST_DIR)/processfile.cpp
 PF_OBJECTS := $(PF_SOURCES:.cpp=.o) $(OBJECTS)
 
@@ -100,12 +85,9 @@ LIBS	:= $(VAMPSDK_DIR)/libvamp-sdk.a -lpthread
 
 default:   all
 
-all:	   libs $(PF) test
+all:	   libs $(PF)
 
 libs:	   $(LIB) $(PLUGIN)
-
-test:	   libs $(TEST_TARGETS)
-	for t in $(TEST_TARGETS); do echo; echo "Running $$t"; $(VALGRIND) ./"$$t" || exit 1; done && echo && $(VALGRIND) "./test/test-inverse.sh" && echo 'Tests complete'
 
 $(PLUGIN):	$(OBJECTS)
 	$(CXX) -o $@ $^ $(LIBS) $(PLUGIN_LDFLAGS)
@@ -118,17 +100,14 @@ $(LIB):	$(LIB_OBJECTS)
 	$(AR) cr $@ $^
 	$(RANLIB) $@
 
-$(TEST_DIR)/Test%:	$(TEST_DIR)/Test%.o
-	$(CXX) -o $@ $^ $(LIB) $(LIBS) $(TEST_LDFLAGS)
-
 clean:		
-	rm -f $(OBJECTS) $(TEST_OBJECTS) $(PF_OBJECTS)
+	rm -f $(OBJECTS) $(PF_OBJECTS)
 
 distclean:	clean
-	rm -f $(PLUGIN) $(TEST_TARGETS)
+	rm -f $(PLUGIN)
 
 depend:
-	makedepend -Y -fMakefile.inc $(SOURCES) $(TEST_SOURCES) $(PF_SOURCES) $(HEADERS)
+	makedepend -Y -fMakefile.inc $(SOURCES) $(PF_SOURCES) $(HEADERS)
 
 # DO NOT DELETE
 
@@ -159,17 +138,6 @@ vamp/CQChromaVamp.o: vamp/CQChromaVamp.h cq/CQSpectrogram.h cq/ConstantQ.h
 vamp/CQChromaVamp.o: cq/CQBase.h cq/CQParameters.h cq/CQKernel.h
 vamp/libmain.o: vamp/CQVamp.h cq/CQSpectrogram.h cq/ConstantQ.h cq/CQBase.h
 vamp/libmain.o: cq/CQParameters.h cq/CQKernel.h vamp/CQChromaVamp.h
-test/TestFFT.o: src/dsp/FFT.h
-test/TestMathUtilities.o: src/dsp/MathUtilities.h src/dsp/nan-inf.h
-test/TestResampler.o: src/dsp/Resampler.h src/dsp/Window.h src/dsp/FFT.h
-test/TestWindow.o: src/dsp/Window.h
-test/TestCQKernel.o: cq/CQKernel.h cq/CQParameters.h
-test/TestCQFrequency.o: cq/CQSpectrogram.h cq/ConstantQ.h cq/CQBase.h
-test/TestCQFrequency.o: cq/CQParameters.h cq/CQKernel.h src/dsp/Window.h
-test/TestCQTime.o: cq/CQSpectrogram.h cq/ConstantQ.h cq/CQBase.h
-test/TestCQTime.o: cq/CQParameters.h cq/CQKernel.h src/dsp/Window.h
-test/processfile.o: cq/ConstantQ.h cq/CQBase.h cq/CQParameters.h
-test/processfile.o: cq/CQKernel.h
 cq/CQKernel.o: cq/CQParameters.h
 cq/ConstantQ.o: cq/CQBase.h cq/CQParameters.h cq/CQKernel.h
 cq/CQSpectrogram.o: cq/ConstantQ.h cq/CQBase.h cq/CQParameters.h
