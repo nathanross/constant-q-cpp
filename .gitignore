@@ -1,4 +1,3 @@
-Makefile
 test/*.o
 vamp/*.o
 src/*.o
